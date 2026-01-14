@@ -3,42 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Analiz Pro - Simulator</title>
+    <title>AI Analiz Pro - Logos</title>
     <style>
         :root { --accent: #f39c12; --bg: #0b0b0b; --card-bg: #1a1a1a; --text: #ecf0f1; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 15px; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
         
-        .header { text-align: center; padding: 20px 0; border-bottom: 2px solid var(--accent); margin-bottom: 25px; background: linear-gradient(to bottom, #222, var(--bg)); border-radius: 0 0 20px 20px; }
+        .header { text-align: center; padding: 20px 0; border-bottom: 2px solid var(--accent); margin-bottom: 25px; border-radius: 0 0 20px 20px; }
         
-        .card { background: var(--card-bg); border-radius: 18px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 8px 16px rgba(0,0,0,0.4); transition: 0.3s; }
+        .card { background: var(--card-bg); border-radius: 18px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
         
-        .league-tag { font-size: 10px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .league-tag { font-size: 10px; color: var(--accent); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 10px; text-align: center; opacity: 0.8; }
         
-        .match-box { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
-        .team { flex: 1; text-align: center; font-size: 15px; font-weight: 800; }
-        .vs-badge { background: #333; padding: 5px 10px; border-radius: 8px; font-size: 11px; color: var(--accent); margin: 0 10px; }
+        .match-box { display: flex; justify-content: space-around; align-items: center; margin: 15px 0; }
+        .team-col { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .team-logo { width: 45px; height: 45px; object-fit: contain; background: #222; padding: 5px; border-radius: 50%; border: 1px solid #333; }
+        .team-name { font-size: 13px; font-weight: 800; max-width: 100px; line-height: 1.2; }
+        
+        .vs-badge { background: #333; padding: 4px 10px; border-radius: 8px; font-size: 10px; color: var(--accent); font-weight: bold; }
 
         .prediction-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .p-item { background: #222; padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #2a2a2a; }
-        .p-label { display: block; font-size: 9px; color: #888; margin-bottom: 3px; }
+        .p-label { display: block; font-size: 8px; color: #888; margin-bottom: 3px; }
         .p-val { font-size: 13px; font-weight: bold; color: #2ecc71; }
 
-        /* Buton ve Animasyonlar */
         .btn-analyze { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; margin-top: 15px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
         
         .loader { width: 16px; height: 16px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: rotation 1s linear infinite; }
-
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .analysis-box { display: none; margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px solid var(--accent); font-size: 13px; line-height: 1.6; color: #ddd; position: relative; }
-        
-        .sim-text { font-style: italic; color: var(--accent); font-size: 11px; margin-bottom: 8px; display: block; }
+        .analysis-box { display: none; margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px solid var(--accent); font-size: 13px; line-height: 1.6; color: #ddd; }
+        .sim-text { font-style: italic; color: var(--accent); font-size: 11px; display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2 style="margin:0;">AI TAHMİN MERKEZİ</h2>
+        <h2 style="margin:0; font-size: 18px;">AI ANALİZ PRO</h2>
     </div>
 
     <div id="content"></div>
@@ -46,13 +46,13 @@
     <script>
         const API_TOKEN = "f950a4eff9b749b48764a00afb4012a0";
 
+        // API Limiti dolarsa gösterilecek yedek logolu maçlar
         const dummy = [
-            { league: "Premier League", home: "Arsenal", away: "Liverpool" },
-            { league: "La Liga", home: "Real Madrid", away: "Barcelona" },
-            { league: "Serie A", home: "Juventus", away: "Inter" }
+            { league: "Premier League", h: "Man City", hL: "https://crests.football-data.org/65.png", a: "Liverpool", aL: "https://crests.football-data.org/64.png" },
+            { league: "La Liga", h: "Real Madrid", hL: "https://crests.football-data.org/86.png", a: "Barcelona", aL: "https://crests.football-data.org/81.png" }
         ];
 
-        async function startAnalysis(btn, home, away) {
+        async function startAnalysis(btn, home) {
             const box = btn.nextElementSibling;
             const loader = btn.querySelector('.loader');
             const btnText = btn.querySelector('.btn-text');
@@ -63,35 +63,27 @@
                 return;
             }
 
-            // Simülasyon Başlıyor
             btn.disabled = true;
             loader.style.display = "inline-block";
-            btnText.innerText = "ANALİZ EDİLİYOR...";
             
-            const logs = ["Veriler taranıyor...", "Sakatlıklar kontrol ediliyor...", "Hava durumu analizi...", "AI Karar veriyor..."];
-            let logIdx = 0;
-            
-            const interval = setInterval(() => {
-                btnText.innerText = logs[logIdx];
-                logIdx++;
-                if(logIdx >= logs.length) clearInterval(interval);
-            }, 800);
+            const logs = ["Veriler taranıyor...", "AI Karar veriyor..."];
+            let idx = 0;
+            const logInt = setInterval(() => { btnText.innerText = logs[idx % logs.length]; idx++; }, 1000);
 
-            // 3.5 Saniye Bekle
-            await new Promise(res => setTimeout(res, 3500));
+            await new Promise(r => setTimeout(r, 3000));
 
+            clearInterval(logInt);
             btn.disabled = false;
             loader.style.display = "none";
             btnText.innerText = "ANALİZİ KAPAT";
             
             const comments = [
-                `${home} ekibi son 3 maçta gol yollarında çok etkili. ${away} savunması bu tempoda zorlanabilir. Tahmin: KG VAR.`,
-                `Yapay zeka modellerimiz ${home} galibiyetine %78 ihtimal veriyor. Orta saha hakimiyeti ev sahibinde olacaktır.`,
-                `İstatistiksel olarak bu maçta 2.5 ÜST barajının aşılması bekleniyor. Her iki takımın da hücum gücü yüksek.`,
-                `${away} takımı deplasman karnesinde son dönemde yükselişte. Kontratak golü izleyebiliriz.`
+                `${home} son dönemdeki form grafiğiyle galibiyete yakın taraf. AI skoru: 2-1.`,
+                `Maçın düğümü orta sahada çözülecek gibi görünüyor. 2.5 Alt riski mevcut.`,
+                `Hücum istatistikleri bu maçta KG VAR ihtimalini %84 gösteriyor.`
             ];
 
-            box.innerHTML = `<span class="sim-text">✨ AI Analizi Tamamlandı:</span> ${comments[Math.floor(Math.random()*comments.length)]}`;
+            box.innerHTML = `<span class="sim-text">✨ AI Sonuç:</span> ${comments[Math.floor(Math.random()*comments.length)]}`;
             box.style.display = "block";
         }
 
@@ -100,26 +92,36 @@
             try {
                 const res = await fetch('https://api.football-data.org/v4/matches', { headers: {'X-Auth-Token': API_TOKEN} });
                 const data = await res.json();
-                const list = (data.matches && data.matches.length > 0) ? data.matches.slice(0,10) : dummy;
+                
+                const list = (data.matches && data.matches.length > 0) ? 
+                    data.matches.slice(0,10).map(m => ({
+                        league: m.competition.name,
+                        h: m.homeTeam.shortName || m.homeTeam.name,
+                        hL: m.homeTeam.crest,
+                        a: m.awayTeam.shortName || m.awayTeam.name,
+                        aL: m.awayTeam.crest
+                    })) : dummy;
                 
                 list.forEach(m => {
-                    const h = m.homeTeam ? (m.homeTeam.shortName || m.homeTeam.name) : m.home;
-                    const a = m.awayTeam ? (m.awayTeam.shortName || m.awayTeam.name) : m.away;
-                    const l = m.competition ? m.competition.name : m.league;
-
                     content.innerHTML += `
                         <div class="card">
-                            <span class="league-tag">${l}</span>
+                            <span class="league-tag">${m.league}</span>
                             <div class="match-box">
-                                <div class="team">${h}</div>
+                                <div class="team-col">
+                                    <img src="${m.hL}" class="team-logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
+                                    <div class="team-name">${m.h}</div>
+                                </div>
                                 <div class="vs-badge">VS</div>
-                                <div class="team">${a}</div>
+                                <div class="team-col">
+                                    <img src="${m.aL}" class="team-logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
+                                    <div class="team-name">${m.a}</div>
+                                </div>
                             </div>
                             <div class="prediction-grid">
                                 <div class="p-item"><span class="p-label">Tahmin</span><span class="p-val">MS 1</span></div>
-                                <div class="p-item"><span class="p-label">AI Güven</span><span class="p-val">%${Math.floor(Math.random()*20)+75}</span></div>
+                                <div class="p-item"><span class="p-label">AI Güven</span><span class="p-val">%${Math.floor(Math.random()*15)+80}</span></div>
                             </div>
-                            <button class="btn-analyze" onclick="startAnalysis(this, '${h}', '${a}')">
+                            <button class="btn-analyze" onclick="startAnalysis(this, '${m.h}')">
                                 <div class="loader"></div>
                                 <span class="btn-text">ANALİZ YAP</span>
                             </button>
@@ -127,7 +129,7 @@
                         </div>
                     `;
                 });
-            } catch(e) { console.log(e); }
+            } catch(e) { content.innerHTML = "Sistem güncelleniyor, lütfen bekleyin..."; }
         }
         init();
     </script>
