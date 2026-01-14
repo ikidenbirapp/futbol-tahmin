@@ -9,17 +9,17 @@
         body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 12px; }
         .header { text-align: center; padding: 15px 0; border-bottom: 2px solid var(--accent); margin-bottom: 20px; border-radius: 0 0 15px 15px; background: #111; }
         .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .league-info { display: flex; justify-content: space-between; font-size: 11px; color: #777; font-weight: bold; margin-bottom: 12px; }
+        .league-info { display: flex; justify-content: space-between; font-size: 10px; color: #777; font-weight: bold; margin-bottom: 12px; text-transform: uppercase; }
         .match-display { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
         .team { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .logo { width: 48px; height: 48px; background: #222; border-radius: 50%; padding: 6px; border: 1px solid #383838; object-fit: contain; }
         .team-name { font-size: 14px; font-weight: 800; color: #efefef; }
-        .vs { color: var(--accent); background: #222; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; border: 1px solid #333; }
+        .vs { color: var(--accent); background: #222; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: bold; border: 1px solid #333; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .box { background: var(--gray); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #383838; }
-        .label { display: block; font-size: 9px; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
+        .box { background: var(--gray); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #383838; }
+        .label { display: block; font-size: 8px; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
         .val { font-size: 13px; font-weight: bold; color: #2ecc71; }
-        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; margin-top: 15px; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
+        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; margin-top: 15px; font-size: 13px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
         .loader { width: 16px; height: 16px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .analysis { display: none; margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px dashed var(--accent); font-size: 13px; line-height: 1.6; color: #ccc; }
@@ -36,7 +36,8 @@
         const dummyData = [
             { league: "PREMIER LEAGUE", h: "Man City", hL: "https://crests.football-data.org/65.png", a: "Liverpool", aL: "https://crests.football-data.org/64.png" },
             { league: "LA LIGA", h: "Real Madrid", hL: "https://crests.football-data.org/86.png", a: "Barcelona", aL: "https://crests.football-data.org/81.png" },
-            { league: "SERIE A", h: "Inter", hL: "https://crests.football-data.org/108.png", a: "AC Milan", aL: "https://crests.football-data.org/98.png" }
+            { league: "SERIE A", h: "Inter", hL: "https://crests.football-data.org/108.png", a: "AC Milan", aL: "https://crests.football-data.org/98.png" },
+            { league: "BUNDESLIGA", h: "Bayern", hL: "https://crests.football-data.org/5.png", a: "Dortmund", aL: "https://crests.football-data.org/4.png" }
         ];
 
         async function analyze(btn, h) {
@@ -66,9 +67,10 @@
             const msgs = [
                 `${h} takımı hücumda çok etkili, KG VAR beklentisi %82.`,
                 `Sıkı bir savunma maçı bekleniyor. 2.5 ALT ihtimali yüksek.`,
-                `Yapay zeka modellerimiz ev sahibi galibiyetine yakın duruyor.`
+                `Yapay zeka modellerimiz ev sahibi galibiyetine yakın duruyor.`,
+                `Maçın temposu düşük kalabilir, beraberlik riski mevcut.`
             ];
-            res.innerHTML = `<span style="color:var(--accent); font-size:11px;">✨ AI ANALİZ:</span><br>${msgs[Math.floor(Math.random()*msgs.length)]}`;
+            res.innerHTML = `<span style="color:var(--accent); font-size:11px; font-weight:bold;">✨ AI ANALİZ:</span><br>${msgs[Math.floor(Math.random()*msgs.length)]}`;
             res.style.display = "block";
         }
 
@@ -78,7 +80,7 @@
             list.forEach(m => {
                 container.innerHTML += `
                     <div class="card">
-                        <div class="league-info"><span>${m.league}</span><span>CANLI</span></div>
+                        <div class="league-info"><span>${m.league}</span><span>CANLI ANALİZ</span></div>
                         <div class="match-display">
                             <div class="team">
                                 <img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
@@ -109,7 +111,7 @@
                     headers: {'X-Auth-Token': API_KEY} 
                 });
                 
-                if (!r.ok) throw new Error("Limit");
+                if (!r.ok) throw new Error("API Limit");
 
                 const d = await r.json();
                 const list = (d.matches && d.matches.length > 0) ? d.matches.slice(0,10).map(m => ({
@@ -122,6 +124,7 @@
 
                 render(list);
             } catch(e) { 
+                console.log("Hata: ", e.message);
                 render(dummyData); 
             }
         }
