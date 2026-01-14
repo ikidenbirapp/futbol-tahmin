@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI ANALİZ PRO - Premium</title>
+    <title>AI ANALİZ PRO - V2</title>
     <style>
-        :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #252525; --text: #efefef; --win: #2ecc71; --loss: #e74c3c; }
+        :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #252525; --text: #efefef; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 12px; }
         .header { text-align: center; padding: 15px 0; border-bottom: 2px solid var(--accent); margin-bottom: 20px; background: #111; border-radius: 0 0 15px 15px; }
-        .card { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
+        .card { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; }
         .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .team-box { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: bold; }
         .team-box.right { justify-content: flex-end; text-align: right; }
@@ -32,24 +32,16 @@
     <script>
         const API_KEY = "8264d543abeb0d68f1b5ca4b98cef776";
 
-        function getAnalysis(h, a, status, hG, aG) {
+        function getAnalysis(h, a, status, fullScore, halfScore) {
             const seed = h.length + a.length;
-            const s = (seed * 23) % 100;
-
-            // Güç Dengesi (Ev Sahibi Ağırlıklı)
             const hP = (seed % 10) + 3;
             const aP = ((seed * 2) % 10);
             
-            // Tahminleri Belirle
             let pMS = hP > aP + 2 ? "MS 1" : (aP > hP + 1 ? "MS 2" : "MS X");
             let pIY = hP > aP + 1 ? "İY 1" : (aP > hP ? "İY 2" : "İY X");
             let pKG = (hP > 5 && aP > 4) ? "KG VAR" : "KG YOK";
             let pAU = (hP + aP > 11) ? "2.5 ÜST" : "2.5 ALT";
-            
-            // İY/MS Mantık Zinciri
-            const iyCode = pIY.split(" ")[1];
-            const msCode = pMS.split(" ")[1];
-            let pIYMS = `${iyCode} / ${msCode}`;
+            let pIYMS = `${pIY.split(" ")[1]} / ${pMS.split(" ")[1]}`;
 
             let res = {
                 ms: { val: pMS, win: null },
@@ -59,36 +51,41 @@
                 iyms: { val: pIYMS, win: null }
             };
 
-            // Maç bittiyse (FT) kontrol et
             if (status === "FT") {
-                const rMS = hG > aG ? "MS 1" : (hG < aG ? "MS 2" : "MS X");
-                const rKG = (hG > 0 && aG > 0 ? "KG VAR" : "KG YOK");
-                const rAU = (hG + aG > 2.5 ? "2.5 ÜST" : "2.5 ALT");
-                
+                // MS Kontrol
+                const rMS = fullScore.home > fullScore.away ? "MS 1" : (fullScore.home < fullScore.away ? "MS 2" : "MS X");
                 res.ms.win = (pMS === rMS);
-                res.kg.win = (pKG === rKG);
-                res.au.win = (pAU === rAU);
-                // Not: İY ve İY/MS sonuçlarını doğrulamak için API'den HT skorunu çekmek gerekir, 
-                // şimdilik MS üzerinden mantıksal doğrulama yapılır.
-            }
+                
+                // KG & Alt/Üst
+                res.kg.win = ((fullScore.home > 0 && fullScore.away > 0 ? "KG VAR" : "KG YOK") === pKG);
+                res.au.win = ((fullScore.home + fullScore.away > 2.5 ? "2.5 ÜST" : "2.5 ALT") === pAU);
 
+                // İY & İY/MS Kontrol (Eğer devre skoru geldiyse)
+                if (halfScore.home !== null && halfScore.away !== null) {
+                    const rIY = halfScore.home > halfScore.away ? "İY 1" : (halfScore.home < halfScore.away ? "İY 2" : "İY X");
+                    res.iy.win = (pIY === rIY);
+                    
+                    const rIYMS = `${rIY.split(" ")[1]} / ${rMS.split(" ")[1]}`;
+                    res.iyms.win = (pIYMS === rIYMS);
+                }
+            }
             return res;
         }
 
-        async function showAnalysis(btn, h, a, status, hG, aG) {
+        async function showAnalysis(btn, h, a, status, hG, aG, hIh, hIa) {
             const panel = btn.nextElementSibling;
             if(panel.style.display === "block") { panel.style.display = "none"; btn.innerText = "ANALİZ YAP"; return; }
             
-            const r = getAnalysis(h, a, status, hG, aG);
+            const r = getAnalysis(h, a, status, {home: hG, away: aG}, {home: hIh, away: hIa});
             const icon = (w) => w === null ? "" : (w ? "<span style='color:#2ecc71'>✅</span>" : "<span style='color:#e74c3c'>❌</span>");
 
             panel.innerHTML = `
                 <div class="result-grid">
                     <div class="res-item"><span class="res-label">Maç Sonucu</span><span class="res-val">${r.ms.val} ${icon(r.ms.win)}</span></div>
-                    <div class="res-item"><span class="res-label">İlk Yarı</span><span class="res-val">${r.iy.val}</span></div>
+                    <div class="res-item"><span class="res-label">İlk Yarı</span><span class="res-val">${r.iy.val} ${icon(r.iy.win)}</span></div>
                     <div class="res-item"><span class="res-label">2.5 Alt/Üst</span><span class="res-val">${r.au.val} ${icon(r.au.win)}</span></div>
                     <div class="res-item"><span class="res-label">Karşılıklı Gol</span><span class="res-val">${r.kg.val} ${icon(r.kg.win)}</span></div>
-                    <div class="res-item full-width"><span class="res-label">İY / MS Tahmini</span><span class="res-val">${r.iyms.val}</span></div>
+                    <div class="res-item full-width"><span class="res-label">İY / MS Tahmini</span><span class="res-val">${r.iyms.val} ${icon(r.iyms.win)}</span></div>
                 </div>`;
             panel.style.display = "block";
             btn.innerText = "KAPAT";
@@ -105,9 +102,9 @@
 
                 if (d.response) {
                     container.innerHTML = '';
-                    d.response.slice(0, 20).forEach(m => {
-                        const status = m.fixture.status.short;
-                        const score = status === "FT" ? `<div class="score-badge">${m.goals.home}:${m.goals.away}</div>` : `<span style="font-size:10px; color:#f39c12; margin:0 10px;">VS</span>`;
+                    d.response.slice(0, 30).forEach(m => {
+                        const s = m.fixture.status.short;
+                        const score = s === "FT" ? `<div class="score-badge">${m.goals.home}:${m.goals.away}</div>` : `<span style="font-size:10px; color:#f39c12; margin:0 10px;">VS</span>`;
 
                         container.innerHTML += `
                         <div class="card">
@@ -116,13 +113,13 @@
                                 ${score}
                                 <div class="team-box right"><span>${m.teams.away.name}</span><img src="${m.teams.away.logo}" class="logo"></div>
                             </div>
-                            <div class="info-row"><span>${m.league.name}</span> | <span>${status === "FT" ? "BİTTİ" : new Date(m.fixture.date).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                            <button class="btn" onclick="showAnalysis(this, '${m.teams.home.name}', '${m.teams.away.name}', '${status}', ${m.goals.home}, ${m.goals.away})">ANALİZ YAP</button>
+                            <div class="info-row"><span>${m.league.name}</span> | <span>${s === "FT" ? "BİTTİ" : new Date(m.fixture.date).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                            <button class="btn" onclick="showAnalysis(this, '${m.teams.home.name}', '${m.teams.away.name}', '${s}', ${m.goals.home}, ${m.goals.away}, ${m.score.halftime.home}, ${m.score.halftime.away})">ANALİZ YAP</button>
                             <div class="analysis-panel"></div>
                         </div>`;
                     });
                 }
-            } catch(e) { container.innerHTML = "<p style='text-align:center;'>Veri çekilemedi.</p>"; }
+            } catch(e) { container.innerHTML = "<p style='text-align:center;'>Yükleme hatası.</p>"; }
         }
         init();
     </script>
