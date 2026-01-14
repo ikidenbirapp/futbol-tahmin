@@ -3,88 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Futbol Analiz</title>
+    <title>AI Analiz - Arşiv Veri Testi</title>
     <style>
         body { background-color: #0b0b0b; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
-        h2 { color: #f39c12; margin-bottom: 20px; }
-        .card { background: #181818; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #f39c12; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: left; }
-        .league-header { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 3px; }
-        .teams { font-size: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
-        .vs { color: #f39c12; font-size: 12px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .info-bar { background: #f39c12; color: #000; padding: 5px; font-size: 10px; font-weight: bold; margin-bottom: 15px; border-radius: 4px; }
+        .card { background: #181818; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #f39c12; }
+        .league-header { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        .teams { font-size: 15px; font-weight: bold; display: flex; justify-content: space-between; margin: 10px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .item { background: #222; padding: 8px; border-radius: 6px; text-align: center; border: 1px solid #333; }
-        .label { color: #f39c12; display: block; font-size: 9px; margin-bottom: 3px; }
+        .label { color: #f39c12; display: block; font-size: 9px; }
         .val { font-size: 12px; font-weight: bold; color: #2ecc71; }
-        #status { color: #f39c12; margin-top: 50px; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2>AI Tahmin Analiz</h2>
-    <div id="status">Günün maçları analiz ediliyor...</div>
-    <div id="content"></div>
+    <div class="info-bar">TEST MODU: 2024 SEZONU VERİLERİ GÖSTERİLİYOR</div>
+    <div id="content">Yükleniyor...</div>
 
     <script>
         const API_KEY = "8264d543abeb0d68f1b5ca4b98cef776";
-        const statusDiv = document.getElementById('status');
         const contentDiv = document.getElementById('content');
 
-        async function fetchAllData() {
+        async function fetchTestMatches() {
             try {
-                // Bugünü YYYY-MM-DD formatında al
-                const today = new Date().toISOString().split('T')[0];
-                
-                // Filtreleri kaldırıp sadece tarihe göre tüm dünyadaki maçları çekiyoruz
-                const url = `https://v3.football.api-sports.io/fixtures?date=${today}`;
+                // Ücretsiz plan 2026'ya izin vermediği için 2024 Mayıs ayından veri çekiyoruz
+                const url = `https://v3.football.api-sports.io/fixtures?date=2024-05-12&season=2024`;
                 
                 const response = await fetch(url, {
                     method: "GET",
-                    headers: { 
-                        "x-rapidapi-key": API_KEY, 
-                        "x-rapidapi-host": "v3.football.api-sports.io" 
-                    }
+                    headers: { "x-rapidapi-key": API_KEY, "x-rapidapi-host": "v3.football.api-sports.io" }
                 });
 
                 const data = await response.json();
 
                 if (data.response && data.response.length > 0) {
-                    statusDiv.style.display = 'none';
-                    
-                    // İlk 20 maçı gösterelim (Limitleri zorlamamak için)
-                    const matches = data.response.slice(0, 20); 
-
-                    matches.forEach(m => {
-                        // Basit AI tahmin mantığı üretelim
-                        const winRate = Math.floor(Math.random() * 35) + 60;
-                        const isOver = Math.random() > 0.5 ? "2.5 ÜST" : "2.5 ALT";
-                        
+                    contentDiv.innerHTML = '';
+                    data.response.slice(0, 15).forEach(m => {
                         contentDiv.innerHTML += `
                             <div class="card">
-                                <div class="league-header">${m.league.country} - ${m.league.name}</div>
+                                <div class="league-header">${m.league.name}</div>
                                 <div class="teams">
                                     <span>${m.teams.home.name}</span>
-                                    <span class="vs">VS</span>
+                                    <span style="color:#f39c12">VS</span>
                                     <span>${m.teams.away.name}</span>
                                 </div>
                                 <div class="grid">
-                                    <div class="item"><span class="label">TAHMİN</span><span class="val">MS 1</span></div>
-                                    <div class="item"><span class="label">GOL</span><span class="val">${isOver}</span></div>
+                                    <div class="item"><span class="label">MS</span><span class="val">MS 1</span></div>
+                                    <div class="item"><span class="label">GOL</span><span class="val">2.5 ÜST</span></div>
                                     <div class="item"><span class="label">KG</span><span class="val">VAR</span></div>
-                                    <div class="item"><span class="label">AI GÜVEN</span><span class="val">%${winRate}</span></div>
+                                    <div class="item"><span class="label">AI</span><span class="val">%${Math.floor(Math.random()*20)+70}</span></div>
                                 </div>
-                            </div>
-                        `;
+                            </div>`;
                     });
                 } else {
-                    statusDiv.innerHTML = "Bugün için henüz analiz edilecek maç verisi bulunamadı.";
+                    contentDiv.innerHTML = "Veri bulunamadı.";
                 }
-
             } catch (e) {
-                statusDiv.innerHTML = "Bağlantı Hatası: " + e.message;
+                contentDiv.innerHTML = "Hata: " + e.message;
             }
         }
-
-        fetchAllData();
+        fetchTestMatches();
     </script>
 </body>
 </html>
