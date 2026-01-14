@@ -2,134 +2,105 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Analiz Pro - Logos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Analiz Premium</title>
     <style>
-        :root { --accent: #f39c12; --bg: #0b0b0b; --card-bg: #1a1a1a; --text: #ecf0f1; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
+        :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #2c2c2c; }
+        body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 12px; }
         
-        .header { text-align: center; padding: 20px 0; border-bottom: 2px solid var(--accent); margin-bottom: 25px; border-radius: 0 0 20px 20px; }
+        /* Header Stil */
+        .header { text-align: center; padding: 15px 0; border-bottom: 2px solid var(--accent); margin-bottom: 20px; border-radius: 0 0 15px 15px; background: #111; }
         
-        .card { background: var(--card-bg); border-radius: 18px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+        /* Kart Yapısı */
+        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         
-        .league-tag { font-size: 10px; color: var(--accent); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 10px; text-align: center; opacity: 0.8; }
-        
-        .match-box { display: flex; justify-content: space-around; align-items: center; margin: 15px 0; }
-        .team-col { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .team-logo { width: 45px; height: 45px; object-fit: contain; background: #222; padding: 5px; border-radius: 50%; border: 1px solid #333; }
-        .team-name { font-size: 13px; font-weight: 800; max-width: 100px; line-height: 1.2; }
-        
-        .vs-badge { background: #333; padding: 4px 10px; border-radius: 8px; font-size: 10px; color: var(--accent); font-weight: bold; }
+        .league-info { display: flex; justify-content: space-between; font-size: 11px; color: #777; font-weight: bold; margin-bottom: 12px; }
 
-        .prediction-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .p-item { background: #222; padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #2a2a2a; }
-        .p-label { display: block; font-size: 8px; color: #888; margin-bottom: 3px; }
-        .p-val { font-size: 13px; font-weight: bold; color: #2ecc71; }
+        /* Takımlar ve Logolar */
+        .match-display { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
+        .team { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .logo { width: 48px; height: 48px; background: #222; border-radius: 50%; padding: 6px; border: 1px solid #383838; object-fit: contain; }
+        .team-name { font-size: 14px; font-weight: 800; color: #efefef; }
+        .vs { color: var(--accent); background: #222; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; border: 1px solid #333; }
 
-        .btn-analyze { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; margin-top: 15px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        
-        .loader { width: 16px; height: 16px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Tahmin Kutuları */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .box { background: var(--gray); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #383838; }
+        .label { display: block; font-size: 9px; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
+        .val { font-size: 13px; font-weight: bold; color: #2ecc71; }
 
-        .analysis-box { display: none; margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px solid var(--accent); font-size: 13px; line-height: 1.6; color: #ddd; }
-        .sim-text { font-style: italic; color: var(--accent); font-size: 11px; display: block; margin-bottom: 5px; }
+        /* Buton */
+        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; margin-top: 15px; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
+        .loader { width: 16px; height: 16px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Analiz Sonucu */
+        .analysis { display: none; margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px dashed var(--accent); font-size: 13px; line-height: 1.6; color: #ccc; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2 style="margin:0; font-size: 18px;">AI ANALİZ PRO</h2>
-    </div>
-
+    <div class="header"><h2 style="margin:0; font-size: 18px; letter-spacing: 1px;">AI ANALİZ PRO</h2></div>
     <div id="content"></div>
 
     <script>
-        const API_TOKEN = "f950a4eff9b749b48764a00afb4012a0";
+        const API_KEY = "f950a4eff9b749b48764a00afb4012a0";
 
-        // API Limiti dolarsa gösterilecek yedek logolu maçlar
-        const dummy = [
-            { league: "Premier League", h: "Man City", hL: "https://crests.football-data.org/65.png", a: "Liverpool", aL: "https://crests.football-data.org/64.png" },
-            { league: "La Liga", h: "Real Madrid", hL: "https://crests.football-data.org/86.png", a: "Barcelona", aL: "https://crests.football-data.org/81.png" }
+        // Yedek Maçlar (Logolu)
+        const dummyData = [
+            { league: "PREMIER LEAGUE", h: "Man City", hL: "https://crests.football-data.org/65.png", a: "Liverpool", aL: "https://crests.football-data.org/64.png" },
+            { league: "LA LIGA", h: "Real Madrid", hL: "https://crests.football-data.org/86.png", a: "Barcelona", aL: "https://crests.football-data.org/81.png" },
+            { league: "SERIE A", h: "Inter", hL: "https://crests.football-data.org/108.png", a: "AC Milan", aL: "https://crests.football-data.org/98.png" }
         ];
 
-        async function startAnalysis(btn, home) {
-            const box = btn.nextElementSibling;
-            const loader = btn.querySelector('.loader');
-            const btnText = btn.querySelector('.btn-text');
+        async function analyze(btn, h) {
+            const res = btn.nextElementSibling;
+            const spin = btn.querySelector('.loader');
+            const txt = btn.querySelector('.btn-text');
             
-            if(box.style.display === "block") {
-                box.style.display = "none";
-                btnText.innerText = "ANALİZ YAP";
-                return;
-            }
+            if(res.style.display === "block") { res.style.display = "none"; txt.innerText = "ANALİZ YAP"; return; }
 
-            btn.disabled = true;
-            loader.style.display = "inline-block";
+            btn.disabled = true; spin.style.display = "inline-block";
+            const steps = ["İstatistikler taranıyor...", "Sakatlar kontrol ediliyor...", "AI Karar veriyor..."];
+            let i = 0;
+            const timer = setInterval(() => { txt.innerText = steps[i % steps.length]; i++; }, 1000);
+
+            await new Promise(r => setTimeout(r, 3500));
+            clearInterval(timer);
+            btn.disabled = false; spin.style.display = "none"; txt.innerText = "KAPAT";
             
-            const logs = ["Veriler taranıyor...", "AI Karar veriyor..."];
-            let idx = 0;
-            const logInt = setInterval(() => { btnText.innerText = logs[idx % logs.length]; idx++; }, 1000);
-
-            await new Promise(r => setTimeout(r, 3000));
-
-            clearInterval(logInt);
-            btn.disabled = false;
-            loader.style.display = "none";
-            btnText.innerText = "ANALİZİ KAPAT";
-            
-            const comments = [
-                `${home} son dönemdeki form grafiğiyle galibiyete yakın taraf. AI skoru: 2-1.`,
-                `Maçın düğümü orta sahada çözülecek gibi görünüyor. 2.5 Alt riski mevcut.`,
-                `Hücum istatistikleri bu maçta KG VAR ihtimalini %84 gösteriyor.`
-            ];
-
-            box.innerHTML = `<span class="sim-text">✨ AI Sonuç:</span> ${comments[Math.floor(Math.random()*comments.length)]}`;
-            box.style.display = "block";
+            const msgs = [`${h} hücum hattında çok formda. AI skoru 2-1 bekliyor.`, `Savunma odaklı bir maç. 2.5 Alt ihtimali %78.`, `Karşılıklı gol ihtimali istatistiksel olarak çok güçlü.`];
+            res.innerHTML = `<span style="color:var(--accent); font-size:11px;">✨ AI ANALİZ SONUCU:</span><br>${msgs[Math.floor(Math.random()*msgs.length)]}`;
+            res.style.display = "block";
         }
 
         async function init() {
-            const content = document.getElementById('content');
+            const container = document.getElementById('content');
             try {
-                const res = await fetch('https://api.football-data.org/v4/matches', { headers: {'X-Auth-Token': API_TOKEN} });
-                const data = await res.json();
-                
-                const list = (data.matches && data.matches.length > 0) ? 
-                    data.matches.slice(0,10).map(m => ({
-                        league: m.competition.name,
-                        h: m.homeTeam.shortName || m.homeTeam.name,
-                        hL: m.homeTeam.crest,
-                        a: m.awayTeam.shortName || m.awayTeam.name,
-                        aL: m.awayTeam.crest
-                    })) : dummy;
-                
+                const r = await fetch('https://api.football-data.org/v4/matches', { headers: {'X-Auth-Token': API_KEY} });
+                const d = await r.json();
+                const list = (d.matches && d.matches.length > 0) ? d.matches.slice(0,10).map(m => ({
+                    league: m.competition.name, h: m.homeTeam.shortName || m.homeTeam.name, hL: m.homeTeam.crest, a: m.awayTeam.shortName || m.awayTeam.name, aL: m.awayTeam.crest
+                })) : dummyData;
+
                 list.forEach(m => {
-                    content.innerHTML += `
+                    container.innerHTML += `
                         <div class="card">
-                            <span class="league-tag">${m.league}</span>
-                            <div class="match-box">
-                                <div class="team-col">
-                                    <img src="${m.hL}" class="team-logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
-                                    <div class="team-name">${m.h}</div>
-                                </div>
-                                <div class="vs-badge">VS</div>
-                                <div class="team-col">
-                                    <img src="${m.aL}" class="team-logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
-                                    <div class="team-name">${m.a}</div>
-                                </div>
+                            <div class="league-info"><span>${m.league}</span><span>CANLI</span></div>
+                            <div class="match-display">
+                                <div class="team"><img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'"><span class="team-name">${m.h}</span></div>
+                                <div class="vs">VS</div>
+                                <div class="team"><img src="${m.aL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'"><span class="team-name">${m.a}</span></div>
                             </div>
-                            <div class="prediction-grid">
-                                <div class="p-item"><span class="p-label">Tahmin</span><span class="p-val">MS 1</span></div>
-                                <div class="p-item"><span class="p-label">AI Güven</span><span class="p-val">%${Math.floor(Math.random()*15)+80}</span></div>
+                            <div class="grid">
+                                <div class="box"><span class="label">Tahmin</span><span class="val">MS 1</span></div>
+                                <div class="box"><span class="label">AI Güven</span><span class="val">%${Math.floor(Math.random()*15)+80}</span></div>
                             </div>
-                            <button class="btn-analyze" onclick="startAnalysis(this, '${m.h}')">
-                                <div class="loader"></div>
-                                <span class="btn-text">ANALİZ YAP</span>
-                            </button>
-                            <div class="analysis-box"></div>
-                        </div>
-                    `;
+                            <button class="btn" onclick="analyze(this, '${m.h}')"><div class="loader"></div><span class="btn-text">ANALİZ YAP</span></button>
+                            <div class="analysis"></div>
+                        </div>`;
                 });
-            } catch(e) { content.innerHTML = "Sistem güncelleniyor, lütfen bekleyin..."; }
+            } catch(e) { container.innerHTML = "<p style='text-align:center'>Veriler yüklenirken bir hata oluştu.</p>"; }
         }
         init();
     </script>
