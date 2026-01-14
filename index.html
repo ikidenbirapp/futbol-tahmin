@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI ANALİZ PRO - Score Check</title>
+    <title>AI ANALİZ PRO - Premium</title>
     <style>
         :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #252525; --text: #efefef; --win: #2ecc71; --loss: #e74c3c; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 12px; }
@@ -11,18 +11,17 @@
         .card { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
         .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .team-box { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: bold; }
-        .team-box.right { justify-content: flex-end; }
-        .logo { width: 32px; height: 32px; object-fit: contain; background: #222; border-radius: 6px; padding: 3px; }
-        .score-badge { background: #000; padding: 4px 10px; border-radius: 5px; color: var(--accent); font-weight: bold; font-size: 14px; border: 1px solid #333; }
+        .team-box.right { justify-content: flex-end; text-align: right; }
+        .logo { width: 32px; height: 32px; object-fit: contain; background: #222; border-radius: 6px; padding: 3px; border: 1px solid #333; }
+        .score-badge { background: #000; padding: 4px 10px; border-radius: 5px; color: var(--accent); font-weight: bold; font-size: 14px; border: 1px solid #333; margin: 0 10px; }
         .info-row { text-align: center; font-size: 10px; color: #777; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
-        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
+        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
         .analysis-panel { display: none; margin-top: 15px; background: #000; border-radius: 12px; padding: 15px; border: 1px solid var(--accent); }
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .res-item { background: var(--gray); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; position: relative; }
-        .res-label { display: block; font-size: 8px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
-        .res-val { font-size: 11px; font-weight: bold; }
-        .status-icon { font-size: 14px; margin-left: 5px; }
-        .full-width { grid-column: span 2; }
+        .res-item { background: var(--gray); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .res-label { display: block; font-size: 8px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; font-weight: bold; }
+        .res-val { font-size: 11px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        .full-width { grid-column: span 2; background: #111; border: 1px dashed var(--accent); }
     </style>
 </head>
 <body>
@@ -35,50 +34,61 @@
 
         function getAnalysis(h, a, status, hG, aG) {
             const seed = h.length + a.length;
-            const s = (seed * 19) % 100;
-            
-            // AI Tahminlerini Sabitle
-            let predHG = s > 45 ? 2 : 1, predAG = s % 4 === 0 ? 1 : 0;
-            const predMS = predHG > predAG ? "MS 1" : (predHG < predAG ? "MS 2" : "MS X");
-            const predKG = (predHG > 0 && predAG > 0 ? "KG VAR" : "KG YOK");
-            const predAU = (predHG + predAG > 2.5 ? "2.5 ÜST" : "2.5 ALT");
+            const s = (seed * 23) % 100;
 
-            let results = {
-                ms: { val: predMS, win: null },
-                kg: { val: predKG, win: null },
-                au: { val: predAU, win: null }
+            // Güç Dengesi (Ev Sahibi Ağırlıklı)
+            const hP = (seed % 10) + 3;
+            const aP = ((seed * 2) % 10);
+            
+            // Tahminleri Belirle
+            let pMS = hP > aP + 2 ? "MS 1" : (aP > hP + 1 ? "MS 2" : "MS X");
+            let pIY = hP > aP + 1 ? "İY 1" : (aP > hP ? "İY 2" : "İY X");
+            let pKG = (hP > 5 && aP > 4) ? "KG VAR" : "KG YOK";
+            let pAU = (hP + aP > 11) ? "2.5 ÜST" : "2.5 ALT";
+            
+            // İY/MS Mantık Zinciri
+            const iyCode = pIY.split(" ")[1];
+            const msCode = pMS.split(" ")[1];
+            let pIYMS = `${iyCode} / ${msCode}`;
+
+            let res = {
+                ms: { val: pMS, win: null },
+                iy: { val: pIY, win: null },
+                kg: { val: pKG, win: null },
+                au: { val: pAU, win: null },
+                iyms: { val: pIYMS, win: null }
             };
 
-            // Maç bittiyse kontrol et
+            // Maç bittiyse (FT) kontrol et
             if (status === "FT") {
-                // MS Kontrol
-                const realMS = hG > aG ? "MS 1" : (hG < aG ? "MS 2" : "MS X");
-                results.ms.win = (predMS === realMS);
+                const rMS = hG > aG ? "MS 1" : (hG < aG ? "MS 2" : "MS X");
+                const rKG = (hG > 0 && aG > 0 ? "KG VAR" : "KG YOK");
+                const rAU = (hG + aG > 2.5 ? "2.5 ÜST" : "2.5 ALT");
                 
-                // KG Kontrol
-                const realKG = (hG > 0 && aG > 0 ? "KG VAR" : "KG YOK");
-                results.kg.win = (predKG === realKG);
-
-                // Alt/Üst Kontrol
-                const realAU = (hG + aG > 2.5 ? "2.5 ÜST" : "2.5 ALT");
-                results.au.win = (predAU === realAU);
+                res.ms.win = (pMS === rMS);
+                res.kg.win = (pKG === rKG);
+                res.au.win = (pAU === rAU);
+                // Not: İY ve İY/MS sonuçlarını doğrulamak için API'den HT skorunu çekmek gerekir, 
+                // şimdilik MS üzerinden mantıksal doğrulama yapılır.
             }
 
-            return results;
+            return res;
         }
 
         async function showAnalysis(btn, h, a, status, hG, aG) {
             const panel = btn.nextElementSibling;
             if(panel.style.display === "block") { panel.style.display = "none"; btn.innerText = "ANALİZ YAP"; return; }
             
-            const res = getAnalysis(h, a, status, hG, aG);
-            const getIcon = (w) => w === null ? "" : (w ? "<span class='status-icon' style='color:#2ecc71'>✅</span>" : "<span class='status-icon' style='color:#e74c3c'>❌</span>");
+            const r = getAnalysis(h, a, status, hG, aG);
+            const icon = (w) => w === null ? "" : (w ? "<span style='color:#2ecc71'>✅</span>" : "<span style='color:#e74c3c'>❌</span>");
 
             panel.innerHTML = `
                 <div class="result-grid">
-                    <div class="res-item"><span class="res-label">Maç Sonucu</span><span class="res-val">${res.ms.val} ${getIcon(res.ms.win)}</span></div>
-                    <div class="res-item"><span class="res-label">Karşılıklı Gol</span><span class="res-val">${res.kg.val} ${getIcon(res.kg.win)}</span></div>
-                    <div class="res-item full-width"><span class="res-label">2.5 Alt/Üst</span><span class="res-val">${res.au.val} ${getIcon(res.au.win)}</span></div>
+                    <div class="res-item"><span class="res-label">Maç Sonucu</span><span class="res-val">${r.ms.val} ${icon(r.ms.win)}</span></div>
+                    <div class="res-item"><span class="res-label">İlk Yarı</span><span class="res-val">${r.iy.val}</span></div>
+                    <div class="res-item"><span class="res-label">2.5 Alt/Üst</span><span class="res-val">${r.au.val} ${icon(r.au.win)}</span></div>
+                    <div class="res-item"><span class="res-label">Karşılıklı Gol</span><span class="res-val">${r.kg.val} ${icon(r.kg.win)}</span></div>
+                    <div class="res-item full-width"><span class="res-label">İY / MS Tahmini</span><span class="res-val">${r.iyms.val}</span></div>
                 </div>`;
             panel.style.display = "block";
             btn.innerText = "KAPAT";
@@ -97,19 +107,17 @@
                     container.innerHTML = '';
                     d.response.slice(0, 20).forEach(m => {
                         const status = m.fixture.status.short;
-                        const hG = m.goals.home;
-                        const aG = m.goals.away;
-                        const scoreDisplay = status === "FT" ? `<div class="score-badge">${hG}:${aG}</div>` : `<span class="vs-text">VS</span>`;
+                        const score = status === "FT" ? `<div class="score-badge">${m.goals.home}:${m.goals.away}</div>` : `<span style="font-size:10px; color:#f39c12; margin:0 10px;">VS</span>`;
 
                         container.innerHTML += `
                         <div class="card">
                             <div class="match-header">
                                 <div class="team-box"><img src="${m.teams.home.logo}" class="logo"><span>${m.teams.home.name}</span></div>
-                                ${scoreDisplay}
+                                ${score}
                                 <div class="team-box right"><span>${m.teams.away.name}</span><img src="${m.teams.away.logo}" class="logo"></div>
                             </div>
-                            <div class="info-row"><span>${m.league.name}</span> | <span>${status === "FT" ? "BİTTİ" : "SAAT: " + new Date(m.fixture.date).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                            <button class="btn" onclick="showAnalysis(this, '${m.teams.home.name}', '${m.teams.away.name}', '${status}', ${hG}, ${aG})">ANALİZ YAP</button>
+                            <div class="info-row"><span>${m.league.name}</span> | <span>${status === "FT" ? "BİTTİ" : new Date(m.fixture.date).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                            <button class="btn" onclick="showAnalysis(this, '${m.teams.home.name}', '${m.teams.away.name}', '${status}', ${m.goals.home}, ${m.goals.away})">ANALİZ YAP</button>
                             <div class="analysis-panel"></div>
                         </div>`;
                     });
