@@ -77,28 +77,51 @@
         async function init() {
             const container = document.getElementById('content');
             try {
-                const r = await fetch('https://api.football-data.org/v4/matches', { headers: {'X-Auth-Token': API_KEY} });
+                const r = await fetch('https://api.football-data.org/v4/matches', { 
+                    headers: {'X-Auth-Token': API_KEY} 
+                });
+                
+                // Eğer API hata verirse (limit vb.) direkt catch bloğuna git
+                if (!r.ok) throw new Error("API Limit");
+
                 const d = await r.json();
                 const list = (d.matches && d.matches.length > 0) ? d.matches.slice(0,10).map(m => ({
-                    league: m.competition.name, h: m.homeTeam.shortName || m.homeTeam.name, hL: m.homeTeam.crest, a: m.awayTeam.shortName || m.awayTeam.name, aL: m.awayTeam.crest
+                    league: m.competition.name, 
+                    h: m.homeTeam.shortName || m.homeTeam.name, 
+                    hL: m.homeTeam.crest, 
+                    a: m.awayTeam.shortName || m.awayTeam.name, 
+                    aL: m.awayTeam.crest
                 })) : dummyData;
 
-                list.forEach(m => {
-                    container.innerHTML += `
-                        <div class="card">
-                            <div class="league-info"><span>${m.league}</span><span>CANLI</span></div>
-                            <div class="match-display">
-                                <div class="team"><img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'"><span class="team-name">${m.h}</span></div>
-                                <div class="vs">VS</div>
-                                <div class="team"><img src="${m.aL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'"><span class="team-name">${m.a}</span></div>
-                            </div>
-                            <div class="grid">
-                                <div class="box"><span class="label">Tahmin</span><span class="val">MS 1</span></div>
-                                <div class="box"><span class="label">AI Güven</span><span class="val">%${Math.floor(Math.random()*15)+80}</span></div>
-                            </div>
-                            <button class="btn" onclick="analyze(this, '${m.h}')"><div class="loader"></div><span class="btn-text">ANALİZ YAP</span></button>
-                            <div class="analysis"></div>
-                        </div>`;
+                render(list);
+            } catch(e) { 
+                // HATA ALSA BİLE YEDEK VERİYİ GÖSTER
+                console.log("Yedek veriler yükleniyor...");
+                render(dummyData); 
+            }
+        }
+
+        function render(list) {
+            const container = document.getElementById('content');
+            container.innerHTML = ''; // İçeriği temizle
+            list.forEach(m => {
+                container.innerHTML += `
+                    <div class="card">
+                        <div class="league-info"><span>${m.league}</span><span>CANLI ANALİZ</span></div>
+                        <div class="match-display">
+                            <div class="team"><img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'"><span class="team-name">${m.h}</span></div>
+                            <div class="vs">VS</div>
+                            <div class="team"><img src="${m.aL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'"><span class="team-name">${m.a}</span></div>
+                        </div>
+                        <div class="grid">
+                            <div class="box"><span class="label">Tahmin</span><span class="val">MS 1</span></div>
+                            <div class="box"><span class="label">AI Güven</span><span class="val">%${Math.floor(Math.random()*15)+80}</span></div>
+                        </div>
+                        <button class="btn" onclick="analyze(this, '${m.h}')"><div class="loader"></div><span class="btn-text">ANALİZ YAP</span></button>
+                        <div class="analysis"></div>
+                    </div>`;
+            });
+        }
                 });
             } catch(e) { container.innerHTML = "<p style='text-align:center'>Veriler yüklenirken bir hata oluştu.</p>"; }
         }
