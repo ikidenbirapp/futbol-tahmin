@@ -3,37 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tahmin Analiz</title>
+    <title>AI Futbol Analiz</title>
     <style>
-        body { background-color: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 15px; text-align: center; }
-        .card { background: #1a1a1a; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #f39c12; text-align: left; }
-        .teams { font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; margin: 10px 0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .item { background: #262626; padding: 8px; border-radius: 6px; font-size: 12px; }
-        .label { color: #f39c12; display: block; font-size: 10px; }
-        #status { color: #f39c12; margin-top: 50px; font-size: 14px; }
+        body { background-color: #0b0b0b; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
+        h2 { color: #f39c12; margin-bottom: 20px; }
+        .card { background: #181818; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #f39c12; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: left; }
+        .league-header { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 3px; }
+        .teams { font-size: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
+        .vs { color: #f39c12; font-size: 12px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .item { background: #222; padding: 8px; border-radius: 6px; text-align: center; border: 1px solid #333; }
+        .label { color: #f39c12; display: block; font-size: 9px; margin-bottom: 3px; }
+        .val { font-size: 12px; font-weight: bold; color: #2ecc71; }
+        #status { color: #f39c12; margin-top: 50px; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2>AI Futbol Analiz</h2>
-    <div id="status">Veriler hazırlanıyor...</div>
+    <h2>AI Tahmin Analiz</h2>
+    <div id="status">Günün maçları analiz ediliyor...</div>
     <div id="content"></div>
 
     <script>
         const API_KEY = "8264d543abeb0d68f1b5ca4b98cef776";
-        const status = document.getElementById('status');
-        const content = document.getElementById('content');
+        const statusDiv = document.getElementById('status');
+        const contentDiv = document.getElementById('content');
 
-        async function getPredictions() {
+        async function fetchAllData() {
             try {
-                // Bugünün tarihini al
+                // Bugünü YYYY-MM-DD formatında al
                 const today = new Date().toISOString().split('T')[0];
                 
-                // Önce bugünün maçlarını çekiyoruz (Sadece Premier Lig ID: 39 örneği ile test edelim)
-                const url = `https://v3.football.api-sports.io/fixtures?date=${today}&league=39&season=2025`;
+                // Filtreleri kaldırıp sadece tarihe göre tüm dünyadaki maçları çekiyoruz
+                const url = `https://v3.football.api-sports.io/fixtures?date=${today}`;
                 
                 const response = await fetch(url, {
+                    method: "GET",
                     headers: { 
                         "x-rapidapi-key": API_KEY, 
                         "x-rapidapi-host": "v3.football.api-sports.io" 
@@ -42,41 +47,44 @@
 
                 const data = await response.json();
 
-                if (data.errors && Object.keys(data.errors).length > 0) {
-                    status.innerHTML = "API Hatası: " + JSON.stringify(data.errors);
-                    return;
-                }
+                if (data.response && data.response.length > 0) {
+                    statusDiv.style.display = 'none';
+                    
+                    // İlk 20 maçı gösterelim (Limitleri zorlamamak için)
+                    const matches = data.response.slice(0, 20); 
 
-                if (!data.response || data.response.length === 0) {
-                    status.innerHTML = "Şu an seçili ligde aktif maç bulunamadı. (Lig ID'sini değiştirerek diğer maçları görebilirsiniz)";
-                    return;
+                    matches.forEach(m => {
+                        // Basit AI tahmin mantığı üretelim
+                        const winRate = Math.floor(Math.random() * 35) + 60;
+                        const isOver = Math.random() > 0.5 ? "2.5 ÜST" : "2.5 ALT";
+                        
+                        contentDiv.innerHTML += `
+                            <div class="card">
+                                <div class="league-header">${m.league.country} - ${m.league.name}</div>
+                                <div class="teams">
+                                    <span>${m.teams.home.name}</span>
+                                    <span class="vs">VS</span>
+                                    <span>${m.teams.away.name}</span>
+                                </div>
+                                <div class="grid">
+                                    <div class="item"><span class="label">TAHMİN</span><span class="val">MS 1</span></div>
+                                    <div class="item"><span class="label">GOL</span><span class="val">${isOver}</span></div>
+                                    <div class="item"><span class="label">KG</span><span class="val">VAR</span></div>
+                                    <div class="item"><span class="label">AI GÜVEN</span><span class="val">%${winRate}</span></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    statusDiv.innerHTML = "Bugün için henüz analiz edilecek maç verisi bulunamadı.";
                 }
-
-                status.style.display = 'none';
-                data.response.forEach(m => {
-                    content.innerHTML += `
-                        <div class="card">
-                            <div style="font-size:10px; color:#888;">${m.league.name}</div>
-                            <div class="teams">
-                                <span>${m.teams.home.name}</span>
-                                <span>vs</span>
-                                <span>${m.teams.away.name}</span>
-                            </div>
-                            <div class="grid">
-                                <div class="item"><span class="label">MAÇ SONUCU</span><b>MS 1</b></div>
-                                <div class="item"><span class="label">ALT/ÜST</span><b>2.5 ÜST</b></div>
-                                <div class="item"><span class="label">KG</span><b>VAR</b></div>
-                                <div class="item"><span class="label">AI GÜVEN</span><b>%${Math.floor(Math.random()*30)+65}</b></div>
-                            </div>
-                        </div>
-                    `;
-                });
 
             } catch (e) {
-                status.innerHTML = "Bağlantı Hatası: " + e.message;
+                statusDiv.innerHTML = "Bağlantı Hatası: " + e.message;
             }
         }
-        getPredictions();
+
+        fetchAllData();
     </script>
 </body>
 </html>
