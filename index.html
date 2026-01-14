@@ -7,34 +7,21 @@
     <style>
         :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #2c2c2c; }
         body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 12px; }
-        
-        /* Header Stil */
         .header { text-align: center; padding: 15px 0; border-bottom: 2px solid var(--accent); margin-bottom: 20px; border-radius: 0 0 15px 15px; background: #111; }
-        
-        /* Kart Yapısı */
         .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        
         .league-info { display: flex; justify-content: space-between; font-size: 11px; color: #777; font-weight: bold; margin-bottom: 12px; }
-
-        /* Takımlar ve Logolar */
         .match-display { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
         .team { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .logo { width: 48px; height: 48px; background: #222; border-radius: 50%; padding: 6px; border: 1px solid #383838; object-fit: contain; }
         .team-name { font-size: 14px; font-weight: 800; color: #efefef; }
         .vs { color: var(--accent); background: #222; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; border: 1px solid #333; }
-
-        /* Tahmin Kutuları */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .box { background: var(--gray); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #383838; }
         .label { display: block; font-size: 9px; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
         .val { font-size: 13px; font-weight: bold; color: #2ecc71; }
-
-        /* Buton */
         .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; margin-top: 15px; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
         .loader { width: 16px; height: 16px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Analiz Sonucu */
         .analysis { display: none; margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px dashed var(--accent); font-size: 13px; line-height: 1.6; color: #ccc; }
     </style>
 </head>
@@ -46,7 +33,6 @@
     <script>
         const API_KEY = "f950a4eff9b749b48764a00afb4012a0";
 
-        // Yedek Maçlar (Logolu)
         const dummyData = [
             { league: "PREMIER LEAGUE", h: "Man City", hL: "https://crests.football-data.org/65.png", a: "Liverpool", aL: "https://crests.football-data.org/64.png" },
             { league: "LA LIGA", h: "Real Madrid", hL: "https://crests.football-data.org/86.png", a: "Barcelona", aL: "https://crests.football-data.org/81.png" },
@@ -74,14 +60,43 @@
             res.style.display = "block";
         }
 
-        async function init() {
+        function render(list) {
             const container = document.getElementById('content');
+            container.innerHTML = ''; 
+            list.forEach(m => {
+                container.innerHTML += `
+                    <div class="card">
+                        <div class="league-info"><span>${m.league}</span><span>CANLI ANALİZ</span></div>
+                        <div class="match-display">
+                            <div class="team">
+                                <img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
+                                <span class="team-name">${m.h}</span>
+                            </div>
+                            <div class="vs">VS</div>
+                            <div class="team">
+                                <img src="${m.aL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
+                                <span class="team-name">${m.a}</span>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div class="box"><span class="label">Tahmin</span><span class="val">MS 1</span></div>
+                            <div class="box"><span class="label">AI Güven</span><span class="val">%${Math.floor(Math.random()*15)+80}</span></div>
+                        </div>
+                        <button class="btn" onclick="analyze(this, '${m.h}')">
+                            <div class="loader"></div>
+                            <span class="btn-text">ANALİZ YAP</span>
+                        </button>
+                        <div class="analysis"></div>
+                    </div>`;
+            });
+        }
+
+        async function init() {
             try {
                 const r = await fetch('https://api.football-data.org/v4/matches', { 
                     headers: {'X-Auth-Token': API_KEY} 
                 });
                 
-                // Eğer API hata verirse (limit vb.) direkt catch bloğuna git
                 if (!r.ok) throw new Error("API Limit");
 
                 const d = await r.json();
@@ -95,36 +110,11 @@
 
                 render(list);
             } catch(e) { 
-                // HATA ALSA BİLE YEDEK VERİYİ GÖSTER
-                console.log("Yedek veriler yükleniyor...");
+                console.log("Hata oluştu, yedek veriler yükleniyor...");
                 render(dummyData); 
             }
         }
 
-        function render(list) {
-            const container = document.getElementById('content');
-            container.innerHTML = ''; // İçeriği temizle
-            list.forEach(m => {
-                container.innerHTML += `
-                    <div class="card">
-                        <div class="league-info"><span>${m.league}</span><span>CANLI ANALİZ</span></div>
-                        <div class="match-display">
-                            <div class="team"><img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'"><span class="team-name">${m.h}</span></div>
-                            <div class="vs">VS</div>
-                            <div class="team"><img src="${m.aL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'"><span class="team-name">${m.a}</span></div>
-                        </div>
-                        <div class="grid">
-                            <div class="box"><span class="label">Tahmin</span><span class="val">MS 1</span></div>
-                            <div class="box"><span class="label">AI Güven</span><span class="val">%${Math.floor(Math.random()*15)+80}</span></div>
-                        </div>
-                        <button class="btn" onclick="analyze(this, '${m.h}')"><div class="loader"></div><span class="btn-text">ANALİZ YAP</span></button>
-                        <div class="analysis"></div>
-                    </div>`;
-            });
-        }
-                });
-            } catch(e) { container.innerHTML = "<p style='text-align:center'>Veriler yüklenirken bir hata oluştu.</p>"; }
-        }
         init();
     </script>
 </body>
