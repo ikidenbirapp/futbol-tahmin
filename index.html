@@ -3,113 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Analiz - Kesintisiz</title>
+    <title>AI Analiz Pro - Simulator</title>
     <style>
-        :root { --accent: #f39c12; --bg: #0b0b0b; --card-bg: #181818; }
-        body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
-        .header { text-align: center; padding: 10px; border-bottom: 2px solid var(--accent); margin-bottom: 20px; }
-        .card { background: var(--card-bg); border-radius: 16px; padding: 18px; margin-bottom: 20px; border-left: 5px solid var(--accent); }
-        .league { font-size: 10px; color: #888; text-transform: uppercase; }
-        .match-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-weight: bold; font-size: 16px; }
-        .vs { color: var(--accent); background: #222; padding: 4px 8px; border-radius: 6px; font-size: 11px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .item { background: #222; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #333; }
-        .label { display: block; font-size: 8px; color: #888; text-transform: uppercase; }
-        .val { font-size: 13px; font-weight: bold; color: #2ecc71; }
-        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        .res { display: none; margin-top: 15px; padding: 12px; background: #000; border-radius: 10px; border: 1px dashed var(--accent); font-size: 13px; color: #ddd; }
-        #loading { text-align: center; color: var(--accent); padding: 50px; }
+        :root { --accent: #f39c12; --bg: #0b0b0b; --card-bg: #1a1a1a; --text: #ecf0f1; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 15px; }
+        
+        .header { text-align: center; padding: 20px 0; border-bottom: 2px solid var(--accent); margin-bottom: 25px; background: linear-gradient(to bottom, #222, var(--bg)); border-radius: 0 0 20px 20px; }
+        
+        .card { background: var(--card-bg); border-radius: 18px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 8px 16px rgba(0,0,0,0.4); transition: 0.3s; }
+        
+        .league-tag { font-size: 10px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .match-box { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
+        .team { flex: 1; text-align: center; font-size: 15px; font-weight: 800; }
+        .vs-badge { background: #333; padding: 5px 10px; border-radius: 8px; font-size: 11px; color: var(--accent); margin: 0 10px; }
+
+        .prediction-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .p-item { background: #222; padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #2a2a2a; }
+        .p-label { display: block; font-size: 9px; color: #888; margin-bottom: 3px; }
+        .p-val { font-size: 13px; font-weight: bold; color: #2ecc71; }
+
+        /* Buton ve Animasyonlar */
+        .btn-analyze { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; margin-top: 15px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        
+        .loader { width: 16px; height: 16px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: rotation 1s linear infinite; }
+
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .analysis-box { display: none; margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px solid var(--accent); font-size: 13px; line-height: 1.6; color: #ddd; position: relative; }
+        
+        .sim-text { font-style: italic; color: var(--accent); font-size: 11px; margin-bottom: 8px; display: block; }
     </style>
 </head>
 <body>
 
-    <div class="header"><h3>AI TAHMİN ANALİZ</h3></div>
-    <div id="loading">AI Veri Tabanına Bağlanılıyor...</div>
+    <div class="header">
+        <h2 style="margin:0;">AI TAHMİN MERKEZİ</h2>
+    </div>
+
     <div id="content"></div>
 
     <script>
         const API_TOKEN = "f950a4eff9b749b48764a00afb4012a0";
 
-        const archiveMatches = [
-            { league: "PREMIER LEAGUE", home: "Manchester City", away: "Liverpool", time: "20:00" },
-            { league: "LA LIGA", home: "Barcelona", away: "Atl. Madrid", time: "21:30" },
-            { league: "SERIE A", home: "Inter", away: "AC Milan", time: "22:45" },
-            { league: "BUNDESLIGA", home: "Bayern Munich", away: "Dortmund", time: "19:30" }
+        const dummy = [
+            { league: "Premier League", home: "Arsenal", away: "Liverpool" },
+            { league: "La Liga", home: "Real Madrid", away: "Barcelona" },
+            { league: "Serie A", home: "Juventus", away: "Inter" }
         ];
 
-        function getAIComment(h, a) {
-            const comments = [
-                `${h} takımı son haftalarda evinde çok agresif. Erken gol bulma şansı %82.`,
-                `${a} deplasmanda savunma disipliniyle tanınır. 2.5 Alt seçeneği ön planda.`,
-                `Yapay zeka modellerimiz bu maçta orta saha mücadelesinin skor belirleyici olacağını söylüyor.`,
-                `İstatistiksel olarak KG VAR ihtimali yüksek bir karşılaşma.`
-            ];
-            return comments[Math.floor(Math.random() * comments.length)];
-        }
-
-        function analyze(btn, h, a) {
-            const r = btn.nextElementSibling;
-            if(r.style.display === "block") {
-                r.style.display = "none";
-                btn.innerText = "ANALİZ YAP";
-            } else {
-                r.innerHTML = "<strong>AI Analizi:</strong> " + getAIComment(h, a);
-                r.style.display = "block";
-                btn.innerText = "KAPAT";
+        async function startAnalysis(btn, home, away) {
+            const box = btn.nextElementSibling;
+            const loader = btn.querySelector('.loader');
+            const btnText = btn.querySelector('.btn-text');
+            
+            if(box.style.display === "block") {
+                box.style.display = "none";
+                btnText.innerText = "ANALİZ YAP";
+                return;
             }
+
+            // Simülasyon Başlıyor
+            btn.disabled = true;
+            loader.style.display = "inline-block";
+            btnText.innerText = "ANALİZ EDİLİYOR...";
+            
+            const logs = ["Veriler taranıyor...", "Sakatlıklar kontrol ediliyor...", "Hava durumu analizi...", "AI Karar veriyor..."];
+            let logIdx = 0;
+            
+            const interval = setInterval(() => {
+                btnText.innerText = logs[logIdx];
+                logIdx++;
+                if(logIdx >= logs.length) clearInterval(interval);
+            }, 800);
+
+            // 3.5 Saniye Bekle
+            await new Promise(res => setTimeout(res, 3500));
+
+            btn.disabled = false;
+            loader.style.display = "none";
+            btnText.innerText = "ANALİZİ KAPAT";
+            
+            const comments = [
+                `${home} ekibi son 3 maçta gol yollarında çok etkili. ${away} savunması bu tempoda zorlanabilir. Tahmin: KG VAR.`,
+                `Yapay zeka modellerimiz ${home} galibiyetine %78 ihtimal veriyor. Orta saha hakimiyeti ev sahibinde olacaktır.`,
+                `İstatistiksel olarak bu maçta 2.5 ÜST barajının aşılması bekleniyor. Her iki takımın da hücum gücü yüksek.`,
+                `${away} takımı deplasman karnesinde son dönemde yükselişte. Kontratak golü izleyebiliriz.`
+            ];
+
+            box.innerHTML = `<span class="sim-text">✨ AI Analizi Tamamlandı:</span> ${comments[Math.floor(Math.random()*comments.length)]}`;
+            box.style.display = "block";
         }
 
         async function init() {
             const content = document.getElementById('content');
-            const loading = document.getElementById('loading');
-            
             try {
-                const res = await fetch('https://api.football-data.org/v4/matches', {
-                    headers: { 'X-Auth-Token': API_TOKEN }
-                });
-                
-                if (!res.ok) throw new Error(); 
+                const res = await fetch('https://api.football-data.org/v4/matches', { headers: {'X-Auth-Token': API_TOKEN} });
                 const data = await res.json();
+                const list = (data.matches && data.matches.length > 0) ? data.matches.slice(0,10) : dummy;
                 
-                if(data.matches && data.matches.length > 0) {
-                    render(data.matches.map(m => ({
-                        league: m.competition.name,
-                        home: m.homeTeam.shortName || m.homeTeam.name,
-                        away: m.awayTeam.shortName || m.awayTeam.name,
-                        time: new Date(m.utcDate).getHours() + ":" + String(new Date(m.utcDate).getMinutes()).padStart(2, '0')
-                    })));
-                } else {
-                    throw new Error();
-                }
-            } catch (e) {
-                console.log("Limit doldu, arşive geçiliyor...");
-                render(archiveMatches);
-            }
-            loading.style.display = "none";
-        }
+                list.forEach(m => {
+                    const h = m.homeTeam ? (m.homeTeam.shortName || m.homeTeam.name) : m.home;
+                    const a = m.awayTeam ? (m.awayTeam.shortName || m.awayTeam.name) : m.away;
+                    const l = m.competition ? m.competition.name : m.league;
 
-        function render(matches) {
-            const content = document.getElementById('content');
-            matches.slice(0, 10).forEach(m => {
-                content.innerHTML += `
-                    <div class="card">
-                        <div style="display:flex; justify-content:space-between">
-                            <span class="league">${m.league}</span>
-                            <span style="font-size:10px; color:#666">${m.time}</span>
+                    content.innerHTML += `
+                        <div class="card">
+                            <span class="league-tag">${l}</span>
+                            <div class="match-box">
+                                <div class="team">${h}</div>
+                                <div class="vs-badge">VS</div>
+                                <div class="team">${a}</div>
+                            </div>
+                            <div class="prediction-grid">
+                                <div class="p-item"><span class="p-label">Tahmin</span><span class="p-val">MS 1</span></div>
+                                <div class="p-item"><span class="p-label">AI Güven</span><span class="p-val">%${Math.floor(Math.random()*20)+75}</span></div>
+                            </div>
+                            <button class="btn-analyze" onclick="startAnalysis(this, '${h}', '${a}')">
+                                <div class="loader"></div>
+                                <span class="btn-text">ANALİZ YAP</span>
+                            </button>
+                            <div class="analysis-box"></div>
                         </div>
-                        <div class="match-row">
-                            <span>${m.home}</span>
-                            <span class="vs">VS</span>
-                            <span>${m.away}</span>
-                        </div>
-                        <div class="grid">
-                            <div class="item"><span class="label">Tahmin</span><span class="val">MS 1</span></div>
-                            <div class="item"><span class="label">AI Güven</span><span class="val">%${Math.floor(Math.random()*15)+80}</span></div>
-                        </div>
-                        <button class="btn" onclick="analyze(this, '${m.home}', '${m.away}')">ANALİZ YAP</button>
-                        <div class="res"></div>
-                    </div>`;
-            });
+                    `;
+                });
+            } catch(e) { console.log(e); }
         }
         init();
     </script>
