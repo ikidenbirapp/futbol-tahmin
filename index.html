@@ -3,109 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI ANALİZ PRO</title>
+    <title>AI ANALİZ PRO - Score Check</title>
     <style>
-        :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #252525; --text: #efefef; }
+        :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #252525; --text: #efefef; --win: #2ecc71; --loss: #e74c3c; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 12px; }
         .header { text-align: center; padding: 15px 0; border-bottom: 2px solid var(--accent); margin-bottom: 20px; background: #111; border-radius: 0 0 15px 15px; }
-        .card { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
+        .card { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
         .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .team-box { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: bold; }
-        .team-box.right { justify-content: flex-end; text-align: right; }
-        .logo { width: 32px; height: 32px; object-fit: contain; background: #222; border-radius: 6px; padding: 3px; border: 1px solid #333; }
-        .vs-text { font-size: 10px; color: var(--accent); font-weight: bold; margin: 0 10px; }
+        .team-box.right { justify-content: flex-end; }
+        .logo { width: 32px; height: 32px; object-fit: contain; background: #222; border-radius: 6px; padding: 3px; }
+        .score-badge { background: #000; padding: 4px 10px; border-radius: 5px; color: var(--accent); font-weight: bold; font-size: 14px; border: 1px solid #333; }
         .info-row { text-align: center; font-size: 10px; color: #777; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
         .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
-        .loader { width: 16px; height: 16px; border: 2px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .analysis-panel { display: none; margin-top: 15px; background: #000; border-radius: 12px; padding: 15px; border: 1px solid var(--accent); }
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .res-item { background: var(--gray); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
-        .res-label { display: block; font-size: 9px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; font-weight: bold; }
-        .res-val { font-size: 12px; font-weight: bold; color: #2ecc71; }
-        .full-width { grid-column: span 2; border-color: var(--accent); }
+        .res-item { background: var(--gray); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; position: relative; }
+        .res-label { display: block; font-size: 8px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
+        .res-val { font-size: 11px; font-weight: bold; }
+        .status-icon { font-size: 14px; margin-left: 5px; }
+        .full-width { grid-column: span 2; }
     </style>
 </head>
 <body>
 
-    <div class="header"><h2 style="margin:0; font-size: 18px; letter-spacing: 1px;">AI ANALİZ PRO</h2></div>
-    <div id="content"><p style="text-align:center; color:#777; margin-top:50px;">Gerçek Maçlar Yükleniyor...</p></div>
+    <div class="header"><h2 style="margin:0; font-size: 18px;">AI ANALİZ PRO</h2></div>
+    <div id="content"><p style="text-align:center; color:#777; margin-top:50px;">Bülten Hazırlanıyor...</p></div>
 
     <script>
         const API_KEY = "8264d543abeb0d68f1b5ca4b98cef776";
 
-        function getLogicalAnalysis(h, a) {
+        function getAnalysis(h, a, status, hG, aG) {
             const seed = h.length + a.length;
-            const s = (seed * 17) % 100;
-            let hG = s > 40 ? 2 : 0, aG = s % 3 === 0 ? 1 : 0;
-            const ms = hG > aG ? "MS 1" : (hG < aG ? "MS 2" : "MS X");
-            const iy = hG >= aG ? (s % 2 === 0 ? "İY X" : "İY 1") : "İY 2";
-            const kg = (hG > 0 && aG > 0) ? "KG VAR" : "KG YOK";
-            const altust = (hG + aG) > 2.5 ? "2.5 ÜST" : "2.5 ALT";
-            return { ms, iy, kg, altust, iyms: `${iy.split(" ")[1]} / ${ms.split(" ")[1]}` };
+            const s = (seed * 19) % 100;
+            
+            // AI Tahminlerini Sabitle
+            let predHG = s > 45 ? 2 : 1, predAG = s % 4 === 0 ? 1 : 0;
+            const predMS = predHG > predAG ? "MS 1" : (predHG < predAG ? "MS 2" : "MS X");
+            const predKG = (predHG > 0 && predAG > 0 ? "KG VAR" : "KG YOK");
+            const predAU = (predHG + predAG > 2.5 ? "2.5 ÜST" : "2.5 ALT");
+
+            let results = {
+                ms: { val: predMS, win: null },
+                kg: { val: predKG, win: null },
+                au: { val: predAU, win: null }
+            };
+
+            // Maç bittiyse kontrol et
+            if (status === "FT") {
+                // MS Kontrol
+                const realMS = hG > aG ? "MS 1" : (hG < aG ? "MS 2" : "MS X");
+                results.ms.win = (predMS === realMS);
+                
+                // KG Kontrol
+                const realKG = (hG > 0 && aG > 0 ? "KG VAR" : "KG YOK");
+                results.kg.win = (predKG === realKG);
+
+                // Alt/Üst Kontrol
+                const realAU = (hG + aG > 2.5 ? "2.5 ÜST" : "2.5 ALT");
+                results.au.win = (predAU === realAU);
+            }
+
+            return results;
         }
 
-        async function startAnalysis(btn, h, a) {
+        async function showAnalysis(btn, h, a, status, hG, aG) {
             const panel = btn.nextElementSibling;
-            const spin = btn.querySelector('.loader');
-            const txt = btn.querySelector('.btn-text');
-            if(panel.style.display === "block") { panel.style.display = "none"; txt.innerText = "ANALİZ YAP"; return; }
-            btn.disabled = true; spin.style.display = "inline-block";
-            txt.innerText = "VERİLER ANALİZ EDİLİYOR...";
-            await new Promise(r => setTimeout(r, 2000));
-            const res = getLogicalAnalysis(h, a);
+            if(panel.style.display === "block") { panel.style.display = "none"; btn.innerText = "ANALİZ YAP"; return; }
+            
+            const res = getAnalysis(h, a, status, hG, aG);
+            const getIcon = (w) => w === null ? "" : (w ? "<span class='status-icon' style='color:#2ecc71'>✅</span>" : "<span class='status-icon' style='color:#e74c3c'>❌</span>");
+
             panel.innerHTML = `
                 <div class="result-grid">
-                    <div class="res-item"><span class="res-label">Maç Sonucu</span><span class="res-val">${res.ms}</span></div>
-                    <div class="res-item"><span class="res-label">İlk Yarı</span><span class="res-val">${res.iy}</span></div>
-                    <div class="res-item"><span class="res-label">Gol 2.5</span><span class="res-val">${res.altust}</span></div>
-                    <div class="res-item"><span class="res-label">Karşılıklı Gol</span><span class="res-val">${res.kg}</span></div>
-                    <div class="res-item full-width"><span class="res-label">İY / MS Tahmini</span><span class="res-val">${res.iyms}</span></div>
+                    <div class="res-item"><span class="res-label">Maç Sonucu</span><span class="res-val">${res.ms.val} ${getIcon(res.ms.win)}</span></div>
+                    <div class="res-item"><span class="res-label">Karşılıklı Gol</span><span class="res-val">${res.kg.val} ${getIcon(res.kg.win)}</span></div>
+                    <div class="res-item full-width"><span class="res-label">2.5 Alt/Üst</span><span class="res-val">${res.au.val} ${getIcon(res.au.win)}</span></div>
                 </div>`;
-            btn.disabled = false; spin.style.display = "none";
-            txt.innerText = "KAPAT"; panel.style.display = "block";
+            panel.style.display = "block";
+            btn.innerText = "KAPAT";
         }
 
         async function init() {
             const container = document.getElementById('content');
             try {
-                // API-Football v3 kullanarak bugün oynanan gerçek maçları çekiyoruz
                 const today = new Date().toISOString().split('T')[0];
                 const r = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`, {
                     headers: { "x-rapidapi-key": API_KEY, "x-rapidapi-host": "v3.football.api-sports.io" }
                 });
                 const d = await r.json();
 
-                if (d.response && d.response.length > 0) {
+                if (d.response) {
                     container.innerHTML = '';
-                    // İlk 20 maçı göster (Premier Lig, Süper Lig vb. önemli olanları öne çıkarır)
-                    d.response.slice(0, 20).forEach(match => {
-                        const m = {
-                            league: match.league.name,
-                            date: new Date(match.fixture.date).toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'}),
-                            h: match.teams.home.name, hL: match.teams.home.logo,
-                            a: match.teams.away.name, aL: match.teams.away.logo
-                        };
+                    d.response.slice(0, 20).forEach(m => {
+                        const status = m.fixture.status.short;
+                        const hG = m.goals.home;
+                        const aG = m.goals.away;
+                        const scoreDisplay = status === "FT" ? `<div class="score-badge">${hG}:${aG}</div>` : `<span class="vs-text">VS</span>`;
+
                         container.innerHTML += `
-                            <div class="card">
-                                <div class="match-header">
-                                    <div class="team-box"><img src="${m.hL}" class="logo"><span>${m.h}</span></div>
-                                    <span class="vs-text">VS</span>
-                                    <div class="team-box right"><span>${m.a}</span><img src="${m.aL}" class="logo"></div>
-                                </div>
-                                <div class="info-row"><span>${m.league}</span> | <span>${m.date}</span></div>
-                                <button class="btn" onclick="startAnalysis(this, '${m.h}', '${m.a}')">
-                                    <div class="loader"></div><span class="btn-text">ANALİZ YAP</span>
-                                </button>
-                                <div class="analysis-panel"></div>
-                            </div>`;
+                        <div class="card">
+                            <div class="match-header">
+                                <div class="team-box"><img src="${m.teams.home.logo}" class="logo"><span>${m.teams.home.name}</span></div>
+                                ${scoreDisplay}
+                                <div class="team-box right"><span>${m.teams.away.name}</span><img src="${m.teams.away.logo}" class="logo"></div>
+                            </div>
+                            <div class="info-row"><span>${m.league.name}</span> | <span>${status === "FT" ? "BİTTİ" : "SAAT: " + new Date(m.fixture.date).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                            <button class="btn" onclick="showAnalysis(this, '${m.teams.home.name}', '${m.teams.away.name}', '${status}', ${hG}, ${aG})">ANALİZ YAP</button>
+                            <div class="analysis-panel"></div>
+                        </div>`;
                     });
-                } else {
-                    container.innerHTML = "<p style='text-align:center;'>Şu an aktif maç bulunamadı.</p>";
                 }
-            } catch(e) {
-                container.innerHTML = "<p style='text-align:center;'>Bağlantı hatası, lütfen tekrar deneyin.</p>";
-            }
+            } catch(e) { container.innerHTML = "<p style='text-align:center;'>Veri çekilemedi.</p>"; }
         }
         init();
     </script>
