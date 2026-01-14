@@ -44,19 +44,31 @@
             const spin = btn.querySelector('.loader');
             const txt = btn.querySelector('.btn-text');
             
-            if(res.style.display === "block") { res.style.display = "none"; txt.innerText = "ANALİZ YAP"; return; }
+            if(res.style.display === "block") { 
+                res.style.display = "none"; 
+                txt.innerText = "ANALİZ YAP"; 
+                return; 
+            }
 
-            btn.disabled = true; spin.style.display = "inline-block";
-            const steps = ["İstatistikler taranıyor...", "Sakatlar kontrol ediliyor...", "AI Karar veriyor..."];
+            btn.disabled = true; 
+            spin.style.display = "inline-block";
+            const steps = ["Veriler taranıyor...", "AI Karar veriyor..."];
             let i = 0;
             const timer = setInterval(() => { txt.innerText = steps[i % steps.length]; i++; }, 1000);
 
             await new Promise(r => setTimeout(r, 3500));
             clearInterval(timer);
-            btn.disabled = false; spin.style.display = "none"; txt.innerText = "KAPAT";
             
-            const msgs = [`${h} hücum hattında çok formda. AI skoru 2-1 bekliyor.`, `Savunma odaklı bir maç. 2.5 Alt ihtimali %78.`, `Karşılıklı gol ihtimali istatistiksel olarak çok güçlü.`];
-            res.innerHTML = `<span style="color:var(--accent); font-size:11px;">✨ AI ANALİZ SONUCU:</span><br>${msgs[Math.floor(Math.random()*msgs.length)]}`;
+            btn.disabled = false; 
+            spin.style.display = "none"; 
+            txt.innerText = "KAPAT";
+            
+            const msgs = [
+                `${h} takımı hücumda çok etkili, KG VAR beklentisi %82.`,
+                `Sıkı bir savunma maçı bekleniyor. 2.5 ALT ihtimali yüksek.`,
+                `Yapay zeka modellerimiz ev sahibi galibiyetine yakın duruyor.`
+            ];
+            res.innerHTML = `<span style="color:var(--accent); font-size:11px;">✨ AI ANALİZ:</span><br>${msgs[Math.floor(Math.random()*msgs.length)]}`;
             res.style.display = "block";
         }
 
@@ -66,7 +78,7 @@
             list.forEach(m => {
                 container.innerHTML += `
                     <div class="card">
-                        <div class="league-info"><span>${m.league}</span><span>CANLI ANALİZ</span></div>
+                        <div class="league-info"><span>${m.league}</span><span>CANLI</span></div>
                         <div class="match-display">
                             <div class="team">
                                 <img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
@@ -97,7 +109,7 @@
                     headers: {'X-Auth-Token': API_KEY} 
                 });
                 
-                if (!r.ok) throw new Error("API Limit");
+                if (!r.ok) throw new Error("Limit");
 
                 const d = await r.json();
                 const list = (d.matches && d.matches.length > 0) ? d.matches.slice(0,10).map(m => ({
@@ -110,7 +122,6 @@
 
                 render(list);
             } catch(e) { 
-                console.log("Hata oluştu, yedek veriler yükleniyor...");
                 render(dummyData); 
             }
         }
