@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI ANALİZ PRO - V2</title>
+    <title>AI ANALİZ PRO - Final</title>
     <style>
         :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #252525; --text: #efefef; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 12px; }
@@ -15,7 +15,9 @@
         .logo { width: 32px; height: 32px; object-fit: contain; background: #222; border-radius: 6px; padding: 3px; border: 1px solid #333; }
         .score-badge { background: #000; padding: 4px 10px; border-radius: 5px; color: var(--accent); font-weight: bold; font-size: 14px; border: 1px solid #333; margin: 0 10px; }
         .info-row { text-align: center; font-size: 10px; color: #777; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
-        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; height: 45px; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; }
+        .loader { width: 18px; height: 18px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .analysis-panel { display: none; margin-top: 15px; background: #000; border-radius: 12px; padding: 15px; border: 1px solid var(--accent); }
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .res-item { background: var(--gray); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
@@ -52,19 +54,14 @@
             };
 
             if (status === "FT") {
-                // MS Kontrol
                 const rMS = fullScore.home > fullScore.away ? "MS 1" : (fullScore.home < fullScore.away ? "MS 2" : "MS X");
                 res.ms.win = (pMS === rMS);
-                
-                // KG & Alt/Üst
                 res.kg.win = ((fullScore.home > 0 && fullScore.away > 0 ? "KG VAR" : "KG YOK") === pKG);
                 res.au.win = ((fullScore.home + fullScore.away > 2.5 ? "2.5 ÜST" : "2.5 ALT") === pAU);
 
-                // İY & İY/MS Kontrol (Eğer devre skoru geldiyse)
-                if (halfScore.home !== null && halfScore.away !== null) {
+                if (halfScore && halfScore.home !== null) {
                     const rIY = halfScore.home > halfScore.away ? "İY 1" : (halfScore.home < halfScore.away ? "İY 2" : "İY X");
                     res.iy.win = (pIY === rIY);
-                    
                     const rIYMS = `${rIY.split(" ")[1]} / ${rMS.split(" ")[1]}`;
                     res.iyms.win = (pIYMS === rIYMS);
                 }
@@ -74,8 +71,23 @@
 
         async function showAnalysis(btn, h, a, status, hG, aG, hIh, hIa) {
             const panel = btn.nextElementSibling;
-            if(panel.style.display === "block") { panel.style.display = "none"; btn.innerText = "ANALİZ YAP"; return; }
-            
+            const loader = btn.querySelector(".loader");
+            const btnText = btn.querySelector(".btn-text");
+
+            if(panel.style.display === "block") {
+                panel.style.display = "none";
+                btnText.innerText = "ANALİZ YAP";
+                return;
+            }
+
+            // Animasyon Başlat
+            btn.disabled = true;
+            loader.style.display = "block";
+            btnText.innerText = "ANALİZ EDİLİYOR...";
+
+            // 2 Saniye Beklet (Yapay Zeka Efekti)
+            await new Promise(r => setTimeout(r, 2000));
+
             const r = getAnalysis(h, a, status, {home: hG, away: aG}, {home: hIh, away: hIa});
             const icon = (w) => w === null ? "" : (w ? "<span style='color:#2ecc71'>✅</span>" : "<span style='color:#e74c3c'>❌</span>");
 
@@ -87,8 +99,11 @@
                     <div class="res-item"><span class="res-label">Karşılıklı Gol</span><span class="res-val">${r.kg.val} ${icon(r.kg.win)}</span></div>
                     <div class="res-item full-width"><span class="res-label">İY / MS Tahmini</span><span class="res-val">${r.iyms.val} ${icon(r.iyms.win)}</span></div>
                 </div>`;
+            
+            btn.disabled = false;
+            loader.style.display = "none";
             panel.style.display = "block";
-            btn.innerText = "KAPAT";
+            btnText.innerText = "KAPAT";
         }
 
         async function init() {
@@ -114,7 +129,9 @@
                                 <div class="team-box right"><span>${m.teams.away.name}</span><img src="${m.teams.away.logo}" class="logo"></div>
                             </div>
                             <div class="info-row"><span>${m.league.name}</span> | <span>${s === "FT" ? "BİTTİ" : new Date(m.fixture.date).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                            <button class="btn" onclick="showAnalysis(this, '${m.teams.home.name}', '${m.teams.away.name}', '${s}', ${m.goals.home}, ${m.goals.away}, ${m.score.halftime.home}, ${m.score.halftime.away})">ANALİZ YAP</button>
+                            <button class="btn" onclick="showAnalysis(this, '${m.teams.home.name.replace(/'/g, "")}', '${m.teams.away.name.replace(/'/g, "")}', '${s}', ${m.goals.home}, ${m.goals.away}, ${m.score.halftime.home}, ${m.score.halftime.away})">
+                                <div class="loader"></div><span class="btn-text">ANALİZ YAP</span>
+                            </button>
                             <div class="analysis-panel"></div>
                         </div>`;
                     });
