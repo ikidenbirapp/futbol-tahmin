@@ -3,132 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Analiz Premium</title>
+    <title>AI Analiz Pro - Full Panel</title>
     <style>
-        :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #2c2c2c; }
-        body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 12px; }
-        .header { text-align: center; padding: 15px 0; border-bottom: 2px solid var(--accent); margin-bottom: 20px; border-radius: 0 0 15px 15px; background: #111; }
-        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .league-info { display: flex; justify-content: space-between; font-size: 10px; color: #777; font-weight: bold; margin-bottom: 12px; text-transform: uppercase; }
-        .match-display { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
-        .team { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .logo { width: 48px; height: 48px; background: #222; border-radius: 50%; padding: 6px; border: 1px solid #383838; object-fit: contain; }
-        .team-name { font-size: 14px; font-weight: 800; color: #efefef; }
-        .vs { color: var(--accent); background: #222; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: bold; border: 1px solid #333; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .box { background: var(--gray); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #383838; }
-        .label { display: block; font-size: 8px; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
-        .val { font-size: 13px; font-weight: bold; color: #2ecc71; }
-        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; margin-top: 15px; font-size: 13px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
-        .loader { width: 16px; height: 16px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: spin 1s linear infinite; }
+        :root { --accent: #f39c12; --bg: #0b0b0b; --card: #1a1a1a; --gray: #252525; --text: #efefef; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 12px; }
+        
+        .header { text-align: center; padding: 15px 0; border-bottom: 2px solid var(--accent); margin-bottom: 20px; background: #111; border-radius: 0 0 15px 15px; }
+        
+        .card { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
+        
+        /* Takım Yerleşimi */
+        .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .team-box { flex: 1; display: flex; align-items: center; gap: 10px; }
+        .team-box.right { justify-content: flex-end; }
+        .logo { width: 35px; height: 35px; object-fit: contain; background: #222; border-radius: 8px; padding: 4px; }
+        .team-name { font-size: 13px; font-weight: bold; }
+        .vs-small { font-size: 10px; color: var(--accent); font-weight: bold; margin: 0 10px; }
+
+        .info-row { text-align: center; font-size: 10px; color: #777; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+
+        /* Analiz Butonu */
+        .btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .loader { width: 14px; height: 14px; border: 2px solid #000; border-bottom-color: transparent; border-radius: 50%; display: none; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .analysis { display: none; margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px dashed var(--accent); font-size: 13px; line-height: 1.6; color: #ccc; }
+
+        /* Analiz Paneli */
+        .analysis-panel { display: none; margin-top: 15px; background: #000; border-radius: 12px; padding: 12px; border: 1px solid var(--accent); }
+        .result-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .res-item { background: var(--gray); padding: 8px; border-radius: 6px; text-align: center; border: 1px solid #333; }
+        .res-label { display: block; font-size: 8px; color: var(--accent); text-transform: uppercase; margin-bottom: 2px; }
+        .res-val { font-size: 11px; font-weight: bold; color: #2ecc71; }
+        .full-row { grid-column: span 2; }
     </style>
 </head>
 <body>
 
-    <div class="header"><h2 style="margin:0; font-size: 18px; letter-spacing: 1px;">AI ANALİZ PRO</h2></div>
+    <div class="header"><h2 style="margin:0; font-size: 16px;">AI ANALİZ PRO</h2></div>
     <div id="content"></div>
 
     <script>
         const API_KEY = "f950a4eff9b749b48764a00afb4012a0";
 
         const dummyData = [
-            { league: "PREMIER LEAGUE", h: "Man City", hL: "https://crests.football-data.org/65.png", a: "Liverpool", aL: "https://crests.football-data.org/64.png" },
-            { league: "LA LIGA", h: "Real Madrid", hL: "https://crests.football-data.org/86.png", a: "Barcelona", aL: "https://crests.football-data.org/81.png" },
-            { league: "SERIE A", h: "Inter", hL: "https://crests.football-data.org/108.png", a: "AC Milan", aL: "https://crests.football-data.org/98.png" },
-            { league: "BUNDESLIGA", h: "Bayern", hL: "https://crests.football-data.org/5.png", a: "Dortmund", aL: "https://crests.football-data.org/4.png" }
+            { league: "PREMIER LEAGUE", date: "14.01.2026", h: "Man City", hL: "https://crests.football-data.org/65.png", a: "Liverpool", aL: "https://crests.football-data.org/64.png" },
+            { league: "LA LIGA", date: "14.01.2026", h: "Real Madrid", hL: "https://crests.football-data.org/86.png", a: "Barcelona", aL: "https://crests.football-data.org/81.png" }
         ];
 
-        async function analyze(btn, h) {
-            const res = btn.nextElementSibling;
+        function getRandomPick(type) {
+            const picks = {
+                ms: ["MS 1", "MS X", "MS 2"],
+                iy: ["İY 1", "İY X", "İY 2"],
+                altust: ["2.5 ÜST", "2.5 ALT", "3.5 ALT"],
+                kg: ["KG VAR", "KG YOK"],
+                iyms: ["1/1", "X/1", "2/2", "X/X", "1/X"]
+            };
+            return picks[type][Math.floor(Math.random() * picks[type].length)];
+        }
+
+        async function startAnalysis(btn) {
+            const panel = btn.nextElementSibling;
             const spin = btn.querySelector('.loader');
             const txt = btn.querySelector('.btn-text');
             
-            if(res.style.display === "block") { 
-                res.style.display = "none"; 
-                txt.innerText = "ANALİZ YAP"; 
-                return; 
+            if(panel.style.display === "block") {
+                panel.style.display = "none";
+                txt.innerText = "ANALİZ YAP";
+                return;
             }
 
-            btn.disabled = true; 
+            btn.disabled = true;
             spin.style.display = "inline-block";
-            const steps = ["Veriler taranıyor...", "AI Karar veriyor..."];
-            let i = 0;
-            const timer = setInterval(() => { txt.innerText = steps[i % steps.length]; i++; }, 1000);
+            txt.innerText = "AI VERİLERİ İŞLİYOR...";
 
-            await new Promise(r => setTimeout(r, 3500));
-            clearInterval(timer);
-            
-            btn.disabled = false; 
-            spin.style.display = "none"; 
+            await new Promise(r => setTimeout(r, 3000));
+
+            btn.disabled = false;
+            spin.style.display = "none";
             txt.innerText = "KAPAT";
-            
-            const msgs = [
-                `${h} takımı hücumda çok etkili, KG VAR beklentisi %82.`,
-                `Sıkı bir savunma maçı bekleniyor. 2.5 ALT ihtimali yüksek.`,
-                `Yapay zeka modellerimiz ev sahibi galibiyetine yakın duruyor.`,
-                `Maçın temposu düşük kalabilir, beraberlik riski mevcut.`
-            ];
-            res.innerHTML = `<span style="color:var(--accent); font-size:11px; font-weight:bold;">✨ AI ANALİZ:</span><br>${msgs[Math.floor(Math.random()*msgs.length)]}`;
-            res.style.display = "block";
+
+            panel.innerHTML = `
+                <div class="result-row">
+                    <div class="res-item"><span class="res-label">Maç Sonucu</span><span class="res-val">${getRandomPick('ms')}</span></div>
+                    <div class="res-item"><span class="res-label">İlk Yarı</span><span class="res-val">${getRandomPick('iy')}</span></div>
+                </div>
+                <div class="result-row">
+                    <div class="res-item"><span class="res-label">Gol 2.5</span><span class="res-val">${getRandomPick('altust')}</span></div>
+                    <div class="res-item"><span class="res-label">KG Durumu</span><span class="res-val">${getRandomPick('kg')}</span></div>
+                </div>
+                <div class="res-item full-row"><span class="res-label">İY / MS Tahmini</span><span class="res-val">${getRandomPick('iyms')}</span></div>
+            `;
+            panel.style.display = "block";
         }
 
         function render(list) {
             const container = document.getElementById('content');
-            container.innerHTML = ''; 
+            container.innerHTML = '';
             list.forEach(m => {
                 container.innerHTML += `
                     <div class="card">
-                        <div class="league-info"><span>${m.league}</span><span>CANLI ANALİZ</span></div>
-                        <div class="match-display">
-                            <div class="team">
-                                <img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
+                        <div class="match-header">
+                            <div class="team-box">
+                                <img src="${m.hL}" class="logo" onerror="this.src='https://via.placeholder.com/40?text=?'">
                                 <span class="team-name">${m.h}</span>
                             </div>
-                            <div class="vs">VS</div>
-                            <div class="team">
-                                <img src="${m.aL}" class="logo" onerror="this.src='https://via.placeholder.com/50?text=?'">
+                            <span class="vs-small">VS</span>
+                            <div class="team-box right">
                                 <span class="team-name">${m.a}</span>
+                                <img src="${m.aL}" class="logo" onerror="this.src='https://via.placeholder.com/40?text=?'">
                             </div>
                         </div>
-                        <div class="grid">
-                            <div class="box"><span class="label">Tahmin</span><span class="val">MS 1</span></div>
-                            <div class="box"><span class="label">AI Güven</span><span class="val">%${Math.floor(Math.random()*15)+80}</span></div>
+                        <div class="info-row">
+                            <span>${m.league}</span> | <span>${m.date}</span>
                         </div>
-                        <button class="btn" onclick="analyze(this, '${m.h}')">
+                        <button class="btn" onclick="startAnalysis(this)">
                             <div class="loader"></div>
                             <span class="btn-text">ANALİZ YAP</span>
                         </button>
-                        <div class="analysis"></div>
+                        <div class="analysis-panel"></div>
                     </div>`;
             });
         }
 
         async function init() {
             try {
-                const r = await fetch('https://api.football-data.org/v4/matches', { 
-                    headers: {'X-Auth-Token': API_KEY} 
-                });
-                
-                if (!r.ok) throw new Error("API Limit");
-
+                const r = await fetch('https://api.football-data.org/v4/matches', { headers: {'X-Auth-Token': API_KEY} });
+                if (!r.ok) throw new Error();
                 const d = await r.json();
-                const list = (d.matches && d.matches.length > 0) ? d.matches.slice(0,10).map(m => ({
-                    league: m.competition.name, 
-                    h: m.homeTeam.shortName || m.homeTeam.name, 
-                    hL: m.homeTeam.crest, 
-                    a: m.awayTeam.shortName || m.awayTeam.name, 
-                    aL: m.awayTeam.crest
-                })) : dummyData;
-
+                const list = d.matches.slice(0,10).map(m => ({
+                    league: m.competition.name,
+                    date: new Date(m.utcDate).toLocaleDateString('tr-TR'),
+                    h: m.homeTeam.shortName || m.homeTeam.name, hL: m.homeTeam.crest,
+                    a: m.awayTeam.shortName || m.awayTeam.name, aL: m.awayTeam.crest
+                }));
                 render(list);
-            } catch(e) { 
-                console.log("Hata: ", e.message);
-                render(dummyData); 
-            }
+            } catch(e) { render(dummyData); }
         }
-
         init();
     </script>
 </body>
